@@ -59,6 +59,8 @@ pub enum Chain {
     OptimismKovan = 69,
     OptimismGoerli = 420,
 
+    BaseGoerli = 84531,
+
     Arbitrum = 42161,
     ArbitrumTestnet = 421611,
     ArbitrumGoerli = 421613,
@@ -252,11 +254,12 @@ impl Chain {
             Dev | AnvilHardhat => 200,
             Celo | CeloAlfajores | CeloBaklava => 5_000,
             FilecoinHyperspaceTestnet | FilecoinMainnet => 30_000,
+            // post-Bedrock, OP stack specifies 2-second block times
+            Optimism | OptimismGoerli | OptimismKovan | BaseGoerli => 2_000,
 
             // Explicitly exhaustive. See NB above.
             Morden | Ropsten | Rinkeby | Goerli | Kovan | XDai | Chiado | Sepolia | Moonbase |
-            MoonbeamDev | Optimism | OptimismGoerli | OptimismKovan | Poa | Sokol | Rsk |
-            EmeraldTestnet => return None,
+            MoonbeamDev | Poa | Sokol | Rsk | EmeraldTestnet => return None,
         };
 
         Some(Duration::from_millis(ms))
@@ -278,40 +281,42 @@ impl Chain {
 
         match self {
             // Known legacy chains / non EIP-1559 compliant
-            Optimism |
-            OptimismGoerli |
-            OptimismKovan |
-            Fantom |
-            FantomTestnet |
-            BinanceSmartChain |
-            BinanceSmartChainTestnet |
-            Arbitrum |
-            ArbitrumTestnet |
-            ArbitrumGoerli |
-            ArbitrumNova |
-            Rsk |
-            Oasis |
-            Emerald |
-            EmeraldTestnet |
-            Celo |
-            CeloAlfajores |
-            CeloBaklava => true,
+            Fantom
+            | FantomTestnet
+            | BinanceSmartChain
+            | BinanceSmartChainTestnet
+            | Arbitrum
+            | ArbitrumTestnet
+            | ArbitrumGoerli
+            | ArbitrumNova
+            | Rsk
+            | Oasis
+            | Emerald
+            | EmeraldTestnet
+            | Celo
+            | CeloAlfajores
+            | CeloBaklava => true,
 
             // Known EIP-1559 chains
-            Mainnet |
-            Goerli |
-            Sepolia |
-            Polygon |
-            PolygonMumbai |
-            Avalanche |
-            AvalancheFuji |
-            FilecoinHyperspaceTestnet => false,
+            Mainnet
+            | Goerli
+            | Sepolia
+            | Polygon
+            | PolygonMumbai
+            | Avalanche
+            | AvalancheFuji
+            | FilecoinHyperspaceTestnet
+            // post-Bedrock, OP stack supports EIP-1559
+            | Optimism
+            | OptimismGoerli
+            | OptimismKovan
+            | BaseGoerli => false,
 
             // Unknown / not applicable, default to false for backwards compatibility
-            Dev | AnvilHardhat | Morden | Ropsten | Rinkeby | Cronos | CronosTestnet | Kovan |
-            Sokol | Poa | XDai | Moonbeam | MoonbeamDev | Moonriver | Moonbase | Evmos |
-            EvmosTestnet | Chiado | Aurora | AuroraTestnet | Canto | CantoTestnet |
-            FilecoinMainnet => false,
+            Dev | AnvilHardhat | Morden | Ropsten | Rinkeby | Cronos | CronosTestnet | Kovan
+            | Sokol | Poa | XDai | Moonbeam | MoonbeamDev | Moonriver | Moonbase | Evmos
+            | EvmosTestnet | Chiado | Aurora | AuroraTestnet | Canto | CantoTestnet
+            | FilecoinMainnet => false,
         }
     }
 
@@ -363,6 +368,7 @@ impl Chain {
                 "https://api-kovan-optimistic.etherscan.io/api",
                 "https://kovan-optimistic.etherscan.io",
             ),
+            BaseGoerli => ("https://api-goerli.basescan.org/api", "https://goerli.basescan.org"),
             Fantom => ("https://api.ftmscan.com/api", "https://ftmscan.com"),
             FantomTestnet => ("https://api-testnet.ftmscan.com/api", "https://testnet.ftmscan.com"),
             BinanceSmartChain => ("https://api.bscscan.com/api", "https://bscscan.com"),
@@ -492,7 +498,8 @@ impl Chain {
             AnvilHardhat |
             Dev |
             FilecoinMainnet |
-            FilecoinHyperspaceTestnet => return None,
+            FilecoinHyperspaceTestnet |
+            BaseGoerli => return None,
         };
 
         Some(api_key_name)
